@@ -10,8 +10,9 @@ import frc.robot.commands.ExampleCommand;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.ExampleSubsystem;
-import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.*;
 
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.wpilibj2.command.Command;
@@ -30,6 +31,15 @@ public class RobotContainer {
   // private final ExampleSubsystem m_exampleSubsystem = new ExampleSubsystem();
   private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
   private final Telemetry telemetry = new Telemetry(TunerConstants.kSpeedAt12Volts.in(MetersPerSecond));
+
+  private final CommandXboxController driver = new CommandXboxController(0);
+  private final double MaxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+  private final double MaxAngularRate = RotationsPerSecond.of(0.85).in(RadiansPerSecond);
+
+  private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
+  .withDeadband(MaxSpeed * 0.1)
+  .withRotationalDeadband(MaxAngularRate * 0.1)
+  .withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -51,6 +61,14 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
+    drivetrain.setDefaultCommand(
+      drivetrain.applyRequest(() -> drive
+      .withVelocityX(-driver.getLeftY() * MaxSpeed)
+      .withVelocityY(-driver.getLeftX() * MaxSpeed)
+      .withRotationalRate(-driver.getRightX() *  MaxAngularRate)
+      )
+    );
+
     drivetrain.registerTelemetry(telemetry::telemeterize);
 
     // Let the swerve motors coast/brake normally while disabled
