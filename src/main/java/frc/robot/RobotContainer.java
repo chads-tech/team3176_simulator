@@ -15,6 +15,8 @@ import static edu.wpi.first.units.Units.*;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
+import org.littletonrobotics.junction.Logger;
+
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.RobotModeTriggers;
@@ -85,6 +87,21 @@ public class RobotContainer {
      m_driverController.b().whileTrue(m_exampleSubsystem.exampleMethodCommand());
      **/
   }
+
+      public void updateLogs() {
+      Logger.recordOutput("Driver/LeftY", driver.getLeftY()); 
+      var state = drivetrain.getState();
+      Logger.recordOutput("Drive/FrontLeftMeters", 
+        state.ModulePositions[0].distanceMeters);
+
+      double requested = Math.hypot(driver.getLeftX(), driver.getLeftY()) * MaxSpeed;
+      double measured = Math.hypot(state.Speeds.vxMetersPerSecond, state.Speeds.vyMetersPerSecond);
+      Logger.recordOutput("Drive/RequestedSpeed", requested);
+      Logger.recordOutput("Drive/MeasuredSpeed", measured);
+      Logger.recordOutput("Drive/Pose", state.Pose);
+    }
+
+    
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
