@@ -16,6 +16,9 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import org.littletonrobotics.junction.Logger;
+import com.pathplanner.lib.commands.PathPlannerAuto;
+import com.pathplanner.lib.util.PathPlannerLogging;
+import edu.wpi.first.math.geometry.Pose2d;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -51,6 +54,15 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
+    PathPlannerLogging.setLogTargetPoseCallback(target -> {
+      Logger.recordOutput("Auto/TargetPose", target);
+      double error = target.getTranslation()
+        .getDistance(drivetrain.getState().Pose.getTranslation());
+      Logger.recordOutput("Auto/errorMeters", error);
+    });
+    PathPlannerLogging.setLogActivePathCallback(path -> 
+      Logger.recordOutput("Auto/ActivePath",
+        path.toArray(new Pose2d[0])));
   }
 
   /**
@@ -108,8 +120,7 @@ public class RobotContainer {
    *
    * @return the command to run in autonomous
    */
-  /** public Command getAutonomousCommand() {
-    // An example command will be run in autonomous
-    return Autos.exampleAuto(m_exampleSubsystem);
-  } **/
+  public Command getAutonomousCommand() {
+    return new PathPlannerAuto("First Auto");
+  }
 }
